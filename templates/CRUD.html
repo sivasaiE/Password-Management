@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        label, input {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="submit"] {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        /* Style for the logout button */
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+
+</head>
+<body>
+    <h1>User Management</h1>
+
+    <!-- Create User Form -->
+    <h2>ADD App credentials</h2>
+    <form action="/add" method="post">
+        <label for="user-name">User-name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="name">WebSite Name:</label>
+        <input type="text" id="websitename" name="websitename" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <input type="submit" value="ADD Website">
+    </form>
+
+    <!-- Read User Form -->
+    <h2>Show all Apps credentials</h2>
+    <form action="/fetch" method="get">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <input type="submit" value="Show credentials">
+    </form>
+
+    <!-- Update User Form -->
+    <h2>Update App credentials</h2>
+    <form action="/update" method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="website name">Website Name:</label>
+        <input type="text" id="website" name="website" required>
+        <label for="password">New Password:</label>
+        <input type="password" id="password" name="password" required>
+        <input type="submit" value="Update App credentials">
+    </form>
+
+    <!-- Delete User Form -->
+    <h2>Delete App credentials</h2>
+    <form action="/delete" method="get">
+        <label for="name"> Name:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="websitename">WebSite Name:</label>
+        <input type="text" id="websitename" name="websitename" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <input type="submit" value="Delete App credentials">
+    </form>
+
+
+    <h2>Logout from here..!</h2>
+    <form action="/logout" method="post">
+        <label for="name"> Name:</label>
+        <input type="text" id="name" name="name" required>
+    <input type="submit" value="Logout">
+</form>
+
+<script>
+    document.getElementById('logoutForm').addEventListener('submit', function(event) {
+        // Prevent the form from submitting immediately
+        event.preventDefault();
+
+        // Get the value of the name input field
+        var name = document.getElementById('nameInput').value;
+
+        // Set the value of the hidden input field
+        document.getElementById('name').value = name;
+
+        // Submit the form programmatically
+        document.getElementById('logoutForm').submit();
+    });
+</script>
+
+</body>
+</html>
