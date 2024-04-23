@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, flash
 from flask_login import current_user, LoginManager, login_user, logout_user
 from Models import db, User, Website
+from bcrypt import gensalt, hashpw, checkpw
 
 app = Flask(__name__)
 login_manager = LoginManager()
@@ -17,6 +18,21 @@ app.config['SECRET_KEY'] = 'your_unique_secret_key'
 def load_user(user_id):
     return User.query.get(user_id)
 
+def set_password(password):
+        password_hash = hashpw(password.encode('utf-8'), gensalt(14))  # Hash password with 14 rounds
+        return password_hash
+def check_password(password):
+    password_hash = set_password(password=password)
+    return checkpw(password.encode('utf-8'), password_hash)
+
+
+def authenticate(username,email, password):
+    # Assuming you want to authenticate based on username:
+    user = User.query.filter_by(username=username, email=email).first()
+    if user and user.check_password(password):
+        return user
+    return None
+
 @app.route('/')
 def welcomepage():
     return render_template("welcomepage.html")
@@ -28,14 +44,17 @@ def signup():
         email = request.form['email']
         phonenumber = request.form['phone']
         password = request.form['password']
+        print("collected form data")
         user = User.query.filter_by(username=name, email=email).first()
+        print(user)
         if user:
-             flash("An user with email-id already exists")
-             return render_template("welcomepage.html")
+            flash("An user with email-id already exists")
+            return render_template("welcomepage.html")
         try:
             if not name or not email or not phonenumber or not password:
                 return "All fields are required for signup.."
-            new_user = User(username=name, email=email, phonenumber=phonenumber, password=password)
+            hashed_password = set_password(password=password)
+            new_user = User(username=name, email=email, phonenumber=phonenumber, password_hash=hashed_password)
             db.session.add(new_user)
             db.session.commit()
             flash("User signed up successfully")
@@ -54,8 +73,8 @@ def login():
         email = request.form['email']
         password = request.form['password']
         try:
-            user = User.query.filter_by(username=name, email=email, password=password).first()
-            print(user)
+            
+            user = authenticate(username=name, email=email, password=password)
             if user:
                 user.is_active = True
                 print(user.username, user.is_active)
@@ -64,6 +83,7 @@ def login():
             else:
                 return "invalid Credentails..."
         except Exception as e:
+            print(str(e))
             return "Invalid Request" 
     return render_template("login.html")
 
