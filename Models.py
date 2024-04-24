@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime, timedelta
-from bcrypt import gensalt, hashpw, checkpw
+
 
 db = SQLAlchemy()
 
@@ -16,11 +16,8 @@ class User(UserMixin, db.Model):
     websites = db.relationship('Website', backref='users', lazy=True)
     password_hash = db.Column(db.String(128), nullable=False)
 
-    def set_password(self, password):
-        self.password_hash = hashpw(password.encode('utf-8'), gensalt(14))  # Hash password with 14 rounds
-
-    def check_password(self, password):
-        return checkpw(password.encode('utf-8'), self.password_hash)
+    
+ 
 
 class Website(db.Model):
     __tablename__ = 'websites'

@@ -2,17 +2,20 @@ from flask import Flask, render_template, request, jsonify, flash
 from flask_login import current_user, LoginManager, login_user, logout_user
 from Models import db, User, Website
 from bcrypt import gensalt, hashpw, checkpw
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///User.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Website.db'
-db.init_app(app)
-
 app.config['SECRET_KEY'] = 'your_unique_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///User.db'
+app.config['SQLALCHEMY_BINDS'] = {
+    'website': 'sqlite:///Website.db'
+}
+
+db.init_app(app)
+migrate = Migrate(app, db)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -28,8 +31,9 @@ def check_password(password):
 
 def authenticate(username,email, password):
     # Assuming you want to authenticate based on username:
-    user = User.query.filter_by(username=username, email=email).first()
-    if user and user.check_password(password):
+    password = check_password(password=password)
+    user = User.query.filter_by(username=username, email=email, password_hash=password).first()
+    if user:
         return user
     return None
 
@@ -46,7 +50,6 @@ def signup():
         password = request.form['password']
         print("collected form data")
         user = User.query.filter_by(username=name, email=email).first()
-        print(user)
         if user:
             flash("An user with email-id already exists")
             return render_template("welcomepage.html")
@@ -72,12 +75,12 @@ def login():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
-        try:
-            
+        try:  
             user = authenticate(username=name, email=email, password=password)
-            if user:
-                user.is_active = True
-                print(user.username, user.is_active)
+            current_user = User.query.filter_by(email=email).first()
+            if current_user:
+                current_user.is_active = True
+                print(current_user.username, current_user.is_active)
                 db.session.commit()
                 return render_template('CRUD.html', user=name)
             else:
@@ -94,8 +97,8 @@ def add_website():
         website_name = request.form['websitename']
         password = request.form['password']
         current_user = User.query.filter_by(username=name).first()
-        if current_user.is_active == True:
-            try:
+        try:
+            if current_user.is_active == True:
                 website = Website.query.filter_by(user_id=User.id, website_name=website_name).first()
                 if website:
                     return jsonify(message="website already exists please update if you want")
@@ -103,9 +106,9 @@ def add_website():
                 db.session.add(new_website)
                 db.session.commit()
                 return render_template('CRUD.HTML') # Redirect to CRUD.html after successful addition
-            except Exception as e:
-                return jsonify(message="Error while adding website: " + str(e)), 500
-        return jsonify(message="User is currently not logged in")
+            return jsonify(message=f"invalid user:{name}")
+        except Exception as e:
+            return jsonify(message=f"Invalid user {name}"), 500
     return "invalid request.."
 
 
